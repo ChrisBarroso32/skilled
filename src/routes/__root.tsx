@@ -29,7 +29,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Skilled - The Registry for Agentic Intelligence',
+      },
+      {
+        name: "description",
+        content: "Discover, publish and operate reusable agent capabilities from a route-driven workspace."
       },
     ],
     links: [
@@ -48,7 +52,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="font-sans antialiased wrap-anywhere">
         <ClerkProvider>
           {children}
           <TanStackDevtools
