@@ -14,6 +14,9 @@ import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
 
+import Navbar from '../components/Navbar.tsx'
+import Crosshair from '../components/Crosshair.tsx';
+
 interface MyRouterContext {
   queryClient: QueryClient
 }
@@ -48,13 +51,29 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
       <body className="font-sans antialiased wrap-anywhere">
         <ClerkProvider>
-          {children}
+          <div id="root-layout">
+            <header>
+              <div className="frame">
+                <Navbar />
+                <Crosshair />
+                <Crosshair />
+              </div>
+            </header>
+            
+            <main>
+              <div className="frame">
+                {children}
+              </div>
+            </main>
+          </div>
+
+          
           <TanStackDevtools
             config={{
               position: 'bottom-right',
