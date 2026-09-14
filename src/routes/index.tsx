@@ -39,7 +39,7 @@ function Home() {
       <section className="latest">
         <div className="space-y-2">
           <h2>
-            Recently Created <span className="text-gradient">Skils</span>
+            Recently Created <span className="text-gradient">Skills</span>
           </h2>
 
           <p>
