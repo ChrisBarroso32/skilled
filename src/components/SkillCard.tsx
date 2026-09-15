@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowBigUp, ArrowUpRight, Bookmark, Check, Copy, MessageSquare, Terminal } from "lucide-react";
 import { useState } from "react";
+import { usePostHog } from "@posthog/react";
 
 const SkillCard = ({ 
     authorEmail, 
@@ -12,9 +13,11 @@ const SkillCard = ({
     title
 }: SkillRecord) => {
     const [copied, setCopied] = useState(false);
+    const posthog = usePostHog();
 
     const handleCopy = () => {
         navigator.clipboard.writeText(installCommand);
+        posthog.capture('skill_install_command_copied');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
