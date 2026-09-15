@@ -1,0 +1,17 @@
+query ListUsers @auth(level: NO_ACCESS) {
+  users {
+    clerkId
+    email
+    userName
+    imageUrl
+  }
+}
+
+query GetUser($clerkId: String!) @auth(level: NO_ACCESS) {
+  user(key: { clerkId: $clerkId }) {
+    clerkId
+    email
+    userName
+    imageUrl
+  }
+}

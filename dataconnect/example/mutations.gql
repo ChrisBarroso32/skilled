@@ -1,0 +1,15 @@
+mutation UpsertUser(
+  $clerkId: String!
+  $email: String!
+  $userName: String
+  $imageUrl: String
+) @auth(level: NO_ACCESS) {
+  user_upsert(
+    data: {
+      clerkId: $clerkId
+      email: $email
+      userName: $userName
+      imageUrl: $imageUrl
+    }
+  )
+}

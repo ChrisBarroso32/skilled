@@ -1,0 +1,28 @@
+# Tabla de usuario
+type User @table(key: "clerkId") {
+    clerkId: String! @unique
+    email: String! # No debe ser nulo
+    userName: String
+    imageUrl: String
+}
+
+# Tabla de Skills
+type Skill @table {
+    id: UUID! @default(expr: "uuidV4()")
+
+    # Realación con la tabla de Usuarios
+    author: User!
+
+    # Contenido del Skill
+    title: String!
+    description: String!
+    tags: [String!]!
+
+    # Datos Tecnicos
+    installCommand: String!
+    promptCommand: String!
+    usageExample: String!
+
+    # Metadatos
+    createdAt: Timestamp! @default(expr: "request.time")
+}
