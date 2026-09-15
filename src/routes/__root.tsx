@@ -3,10 +3,12 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-import { ClerkProvider } from '@clerk/tanstack-react-start'
+import { ClerkProvider, useUser } from '@clerk/tanstack-react-start'
+import { PostHogProvider, usePostHog } from '@posthog/react'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -47,7 +49,94 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  errorComponent: RootErrorComponent,
 })
+
+function RootErrorComponent({ error }: { error: Error }) {
+  const posthog = usePostHog()
+
+  useEffect(() => {
+    posthog.captureException(error)
+  }, [error, posthog])
+
+  return <p>Something went wrong. Please refresh the page and try again.</p>
+}
+
+function PostHogUserIdentification() {
+  const posthog = usePostHog()
+  const { isLoaded, user } = useUser()
+  const previousUserId = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!isLoaded) return
+
+    const userId = user?.id ?? null
+
+    if (!userId) {
+      if (previousUserId.current) {
+        posthog.reset()
+        previousUserId.current = null
+      }
+      return
+    }
+
+    if (previousUserId.current === userId) return
+
+    if (previousUserId.current) {
+      posthog.reset()
+    }
+
+    const personProperties: Record<string, string> = {}
+    const email = user.primaryEmailAddress?.emailAddress
+
+    if (email) personProperties.email = email
+    if (user.fullName) personProperties.name = user.fullName
+
+    posthog.identify(userId, personProperties)
+    previousUserId.current = userId
+  }, [isLoaded, posthog, user])
+
+  return null
+}
+
+function PostHogClientProvider({ children }: { children: React.ReactNode }) {
+  const apiKey = import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN
+  const apiHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST
+
+  if (!apiKey) {
+    if (import.meta.env.DEV) {
+      throw new Error(
+        'VITE_PUBLIC_POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once VITE_PUBLIC_POSTHOG_PROJECT_TOKEN is configured',
+      )
+    }
+
+    return children
+  }
+
+  if (!apiHost) {
+    if (import.meta.env.DEV) {
+      throw new Error(
+        'VITE_PUBLIC_POSTHOG_HOST variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once VITE_PUBLIC_POSTHOG_HOST is configured',
+      )
+    }
+
+    return children
+  }
+
+  return (
+    <PostHogProvider
+      apiKey={apiKey}
+      options={{
+        api_host: apiHost,
+        capture_exceptions: true,
+        defaults: '2025-05-24',
+        debug: import.meta.env.DEV,
+      }}
+    >
+      {children}
+    </PostHogProvider>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -56,7 +145,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-sans antialiased wrap-anywhere">
-        <ClerkProvider>
+        <PostHogClientProvider>
+          <ClerkProvider>
+          <PostHogUserIdentification />
           <div id="root-layout">
             <header>
               <div className="frame">
@@ -86,7 +177,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               TanStackQueryDevtools,
             ]}
           />
-        </ClerkProvider>
+          </ClerkProvider>
+        </PostHogClientProvider>
         <Scripts />
       </body>
     </html>
