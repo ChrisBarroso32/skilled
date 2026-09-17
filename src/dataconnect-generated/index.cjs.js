@@ -1,4 +1,4 @@
-const { queryRef, executeQuery, validateArgsWithOptions, mutationRef, executeMutation, validateArgs, makeMemoryCacheProvider } = require('firebase/data-connect');
+const { queryRef, executeQuery, validateArgsWithOptions, validateArgs, makeMemoryCacheProvider } = require('firebase/data-connect');
 
 const connectorConfig = {
   connector: 'example',
@@ -13,46 +13,17 @@ const dataConnectSettings = {
 };
 exports.dataConnectSettings = dataConnectSettings;
 
-const upsertUserRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+const skillsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
   dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpsertUser', inputVars);
+  return queryRef(dcInstance, 'Skills', inputVars);
 }
-upsertUserRef.operationName = 'UpsertUser';
-exports.upsertUserRef = upsertUserRef;
+skillsRef.operationName = 'Skills';
+exports.skillsRef = skillsRef;
 
-exports.upsertUser = function upsertUser(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(upsertUserRef(dcInstance, inputVars));
-}
-;
-
-const listUsersRef = (dc) => {
-  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'ListUsers');
-}
-listUsersRef.operationName = 'ListUsers';
-exports.listUsersRef = listUsersRef;
-
-exports.listUsers = function listUsers(dcOrOptions, options) {
+exports.skills = function skills(dcOrVars, varsOrOptions, options) {
   
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
-  return executeQuery(listUsersRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
-}
-;
-
-const getUserRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetUser', inputVars);
-}
-getUserRef.operationName = 'GetUser';
-exports.getUserRef = getUserRef;
-
-exports.getUser = function getUser(dcOrVars, varsOrOptions, options) {
-  
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getUserRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  return executeQuery(skillsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
