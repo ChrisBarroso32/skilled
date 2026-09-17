@@ -1,65 +1,92 @@
-import SkillCard from '#/components/SkillCard.tsx';
-import { dummySkills } from '#/lib/dummy-skills.ts';
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Terminal } from 'lucide-react';
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { Terminal } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import SkillCard from "#/components/SkillCard";
+import { skills } from "#/dataconnect-generated";
+import { dataConnect } from "#/lib/firebase";
 
-export const Route = createFileRoute('/')({ component: Home })
+const getSkillsFn = createServerFn({ method: "GET" }).handler(async () => {
+	try {
+		const { data } = await skills(dataConnect, {
+			searchTerm: "",
+			limit: 10,
+		});
+
+		return data.skills;
+	} catch (error) {
+		console.error(error);
+		return [];
+	}
+});
+
+export const Route = createFileRoute("/")({
+	component: Home,
+	loader: () => getSkillsFn(),
+});
 
 function Home() {
-  return (
-    <div id="home">
-      <section className="hero">
-        <div className="copy">
-          <h1>
-            The Registry for <br/> 
-            <span className="text-gradient">Agentic 
-              Intelligence</span>
-          </h1>
+	const posthog = usePostHog();
 
-          <p>
-            A high-perormance registry for procedural agent skills. Discover,
-            publish, and operate reusable m agent capabilities from a route-driven
-            workspace.
-          </p>
-        </div>
+	const skills = Route.useLoaderData();
 
-        <div className="actions">
-          <Link to="/skills" className="btn-primary">
-            <Terminal size={18}/>
-            <span>Browse Registry</span>
-          </Link>
+	return (
+		<div id="home">
+			<section className="hero">
+				<div className="copy">
+					<h1>
+						The Registry for <br />
+						<span className="text-gradient">Agentic Intelligence</span>
+					</h1>
+					<p>
+						A high-performance registry for procedural agent skills. Discover,
+						publish, and operate reusable agent capabilities from a route-driven
+						workspace.
+					</p>
+				</div>
 
-          <Link to="/skills/new" className="btn-secondary">
-            <Terminal size={18}/> 
-            Publish Skill
-          </Link>
-        </div>
-      </section>
+				<div className="actions">
+					<Link
+						to="/skills"
+						className="btn-primary"
+						onClick={() => posthog.capture("browse_registry_clicked")}
+					>
+						<Terminal size={18} />
+						<span>Browse Registry</span>
+					</Link>
+					<Link
+						to="/skills/new"
+						className="btn-secondary"
+						onClick={() => posthog.capture("publish_skill_clicked")}
+					>
+						Publish Skill
+					</Link>
+				</div>
+			</section>
 
-      <section className="latest">
-        <div className="space-y-2">
-          <h2>
-            Recently Created <span className="text-gradient">Skills</span>
-          </h2>
+			<section className="latest">
+				<div className="space-y-2">
+					<h2>
+						Recently Created <span className="text-gradient">Skills</span>
+					</h2>
+					<p>
+						{" "}
+						Latest skills loaded from database in descending creation order.
+					</p>
+				</div>
 
-          <p>
-            Latest skills loaded from database in descending
-            creation order.
-          </p>
-        </div>
-
-        <div>
-          {dummySkills.length > 0 ? (
-            <div className="skills-grid">
-              {dummySkills.map((skill) => (
-                <SkillCard key={skill.id} {...skill} />
-              ))}
-            </div>
-          ) : (<p>No skills have been created yet.</p>
-
-          )}
-        </div>      
-      </section>
-    </div>
-  );
-};
+				<div>
+					{skills.length > 0 ? (
+						<div className="skills-grid">
+							{skills.map((skill) => (
+								<SkillCard key={skill.id} {...skill} />
+							))}
+						</div>
+					) : (
+						<p>No skills have been created yet.</p>
+					)}
+				</div>
+			</section>
+		</div>
+	);
+}

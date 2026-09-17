@@ -1,19 +1,25 @@
+import type { SkillsData } from "@dataconnect/generated";
+import { usePostHog } from "@posthog/react";
 import { Link } from "@tanstack/react-router";
 import { ArrowBigUp, ArrowUpRight, Bookmark, Check, Copy, MessageSquare, Terminal } from "lucide-react";
 import { useState } from "react";
-import { usePostHog } from "@posthog/react";
+
+type SkillsCardProps = SkillsData["skills"][number];
 
 const SkillCard = ({ 
-    authorEmail, 
-    category, 
     createdAt,
     description,
     installCommand,
     tags, 
-    title
-}: SkillRecord) => {
+    title,
+    author,
+}: SkillsCardProps) => {
     const [copied, setCopied] = useState(false);
     const posthog = usePostHog();
+
+    const category = tags[0] ?? 'General'
+
+    // console.log('AUTHOR:', author);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(installCommand);
@@ -44,9 +50,9 @@ const SkillCard = ({
                 <div className="body">
                     <div className="meta">
                         <div className="author">
-                            <img src="/logo512.png" alt="author avatar" className="avatar"/>
+                            <img src={author.imageUrl || "/logo512.png"} alt={`${author.userName} avatar`} className="avatar"/>
                             <div className="author-copy">
-                                <p>Christian</p>
+                                <p>{author.userName}</p>
                                 <p>{new Date(createdAt as string).toLocaleDateString()}</p>
                             </div>
                         </div>
@@ -55,7 +61,7 @@ const SkillCard = ({
                     </div>
 
                     <div className="summary">
-                        <Link to="skills" className="title-link">
+                        <Link to="/skills" className="title-link">
                             <h3>{title}</h3>
                         </Link>
 
@@ -81,12 +87,12 @@ const SkillCard = ({
                         <div className="stats">
                             <button type="button" className="upvote" disabled>
                                 <ArrowBigUp size={16} fill="currentColor" />
-                                <span>{tags.length}</span>
+                                <span>{tags.length}</span> 
                             </button>
 
                             <div className="comments">
                                 <MessageSquare size={14} />
-                                <span>{authorEmail ? 1 : 0}</span>
+                                <span>{author.email ? 1 : 0}</span>
                             </div>
 
                             <div className="actions">

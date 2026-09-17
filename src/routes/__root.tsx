@@ -1,23 +1,19 @@
-import {
-  HeadContent,
-  Scripts,
-  createRootRouteWithContext,
-} from '@tanstack/react-router'
-import { useEffect, useRef } from 'react'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
-
 import { ClerkProvider, useUser } from '@clerk/tanstack-react-start'
 import { PostHogProvider, usePostHog } from '@posthog/react'
-
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
-
-import appCss from '../styles.css?url'
-
+import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { QueryClient } from '@tanstack/react-query'
-
-import Navbar from '../components/Navbar.tsx'
+import {
+  createRootRouteWithContext,
+  type ErrorComponentProps,
+  HeadContent,
+  Scripts,
+} from '@tanstack/react-router'
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { useEffect, useRef } from 'react'
 import Crosshair from '../components/Crosshair.tsx';
+import Navbar from '../components/Navbar.tsx'
+import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
+import appCss from '../styles.css?url'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -52,7 +48,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   errorComponent: RootErrorComponent,
 })
 
-function RootErrorComponent({ error }: { error: Error }) {
+function RootErrorComponent({ error }: ErrorComponentProps) {
   const posthog = usePostHog()
 
   useEffect(() => {
@@ -87,10 +83,10 @@ function PostHogUserIdentification() {
     }
 
     const personProperties: Record<string, string> = {}
-    const email = user.primaryEmailAddress?.emailAddress
+    const email = user?.primaryEmailAddress?.emailAddress
 
     if (email) personProperties.email = email
-    if (user.fullName) personProperties.name = user.fullName
+    if (user?.fullName) personProperties.name = user.fullName
 
     posthog.identify(userId, personProperties)
     previousUserId.current = userId
